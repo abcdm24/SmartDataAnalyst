@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: src/SmartDataAnalyst.Backend/backend.dockerfile
+    container_name: smartdataanalyst-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - src/SmartDataAnalyst.Backend/.env
+    volumes:
+      - ./src/SmartDataAnalyst.Backend:/app
+    restart: always
