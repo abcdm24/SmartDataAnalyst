@@ -5,3 +5,5 @@ matplotlib
 openai
 python-multipart
 python-dotenv
+pytest
+psutil
