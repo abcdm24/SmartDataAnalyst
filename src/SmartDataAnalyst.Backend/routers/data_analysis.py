@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 import pandas as pd
 import os
 # from core.agent import analyze_query
-from core.agent_v13 import Agent_v13
+from core.agent_v14 import Agent_v14
 
 router = APIRouter(prefix="/api/data", tags=["Data Analysis"])
 
@@ -14,7 +14,7 @@ AGENTS = {}
 
 def get_agent_for_file(filename):
     if filename not in AGENTS:
-        AGENTS[filename] = Agent_v13()
+        AGENTS[filename] = Agent_v14()
     return AGENTS[filename]
 
 

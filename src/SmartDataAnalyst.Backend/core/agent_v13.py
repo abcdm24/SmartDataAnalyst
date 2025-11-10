@@ -1,5 +1,5 @@
 import code
-from core.llm_client import ask_llm
+from .llm_client import ask_llm
 import pandas as pd
 import io
 import contextlib
@@ -8,7 +8,7 @@ import gc
 import sys
 from typing import List
 import asyncio
-from core.config import MODEL_BUDGETS
+from .config import MODEL_BUDGETS
 
 class Agent_v13:
 
