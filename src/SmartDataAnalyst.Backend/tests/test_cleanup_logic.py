@@ -2,11 +2,11 @@ import os
 import io
 import pytest
 import pandas as pd
-from core.agent import Agent
+from core.agent_v12 import Agent_v12
 
 @pytest.fixture
 def agent_instance():
-    agent = Agent()
+    agent = Agent_v12()
     yield agent
     agent.cleanup({}, None)  # Ensure cleanup after each test
 
@@ -37,10 +37,10 @@ def test_cleanup_safe_if_none(agent_instance):
 def test_analyze_query_valid_code(monkeypatch):
     """Mock LLm and verify analyze_query executes correctly."""
     # Mock LLM to return valid python code
-    monkeypatch.setattr("core.agent.ask_llm", lambda prompt: "result = len(df)")
+    monkeypatch.setattr("core.agent_v12.ask_llm", lambda prompt: "result = len(df)")
 
     df = pd.DataFrame({"a":[1,2,3]})
-    agent = Agent()
+    agent = Agent_v12()
     result = agent.analyze_query(df, "Count rows")
 
     assert result == "3", f"Unexpected result: {result}"
@@ -48,10 +48,10 @@ def test_analyze_query_valid_code(monkeypatch):
 
 def test_analyze_query_invalid_code(monkeypatch):
     """Ensure analyze_query handles code errors gracefully."""
-    monkeypatch.setattr("core.agent.ask_llm", lambda prompt: "invalid code here")
+    monkeypatch.setattr("core.agent_v12.ask_llm", lambda prompt: "invalid code here")
 
     df = pd.DataFrame({"a":[1,2,3]})
-    agent = Agent()
+    agent = Agent_v12()
     result = agent.analyze_query(df, "This will fail")
 
     assert "Error executing code" in result
@@ -59,7 +59,7 @@ def test_analyze_query_invalid_code(monkeypatch):
 def test_cleanup_called_in_finally(monkeypatch):
     """Verify that cleanup is called even when execution fails."""
 
-    agent = Agent()
+    agent = Agent_v12()
     df = pd.DataFrame({"a": [1,2,3]})
     cleanup_called = {}
 
@@ -67,7 +67,7 @@ def test_cleanup_called_in_finally(monkeypatch):
         cleanup_called["called"] = True
 
     # Force LLM to return bad code to trigger execution
-    monkeypatch.setattr("core.agent.ask_llm", lambda prompt: "raise Exception('oops')")
+    monkeypatch.setattr("core.agent_v12.ask_llm", lambda prompt: "raise Exception('oops')")
     monkeypatch.setattr(agent, "cleanup", mock_cleanup)
 
     _ = agent.analyze_query(df, "trigger error")

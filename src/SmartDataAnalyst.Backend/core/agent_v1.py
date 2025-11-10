@@ -1,8 +1,8 @@
-from core.llm_client import ask_llm
-import pandas as pd
-import io
-import contextlib
-import re
+# from core.llm_client import ask_llm
+# import pandas as pd
+# import io
+# import contextlib
+# import re
 
 # def analyze_query(df: pd.DataFrame, question: str) -> str:
 #     """
@@ -48,26 +48,26 @@ import re
 #     except Exception as e:
 #         return f"Error executing code: {e}"
 
-def clean_code_block(text: str) -> str:
-    """
-    Extracts clean python code from LLM responses
-    that may contain markdown fences or extra text.
-    """
+# def clean_code_block(text: str) -> str:
+#     """
+#     Extracts clean python code from LLM responses
+#     that may contain markdown fences or extra text.
+#     """
 
-    # Remove Markdown code fences if present
-    code_block = re.search(r"```(?:python)?(.*?)```", text, re.DOTALL)
-    if code_block:
-        return code_block.group(1).strip()
-    # Otherwise, return the original (stripped)
-    return text.strip()
+#     Remove Markdown code fences if present
+#     code_block = re.search(r"```(?:python)?(.*?)```", text, re.DOTALL)
+#     if code_block:
+#         return code_block.group(1).strip()
+#     Otherwise, return the original (stripped)
+#     return text.strip()
 
-    # if text.startswith("```") and text.endswith("```"):
-    #     # Remove the triple backticks
-    #     text = text[3:-3]
-    #     # If there's a language specifier, remove it
-    #     if text.startswith("python\n"):
-    #         text = text[len("python\n"):]
-    # return text.strip()
+#     if text.startswith("```") and text.endswith("```"):
+#         # Remove the triple backticks
+#         text = text[3:-3]
+#         # If there's a language specifier, remove it
+#         if text.startswith("python\n"):
+#             text = text[len("python\n"):]
+#     return text.strip()
 
 # def analyze_query(df: pd.DataFrame, question: str) -> str:
 #     """

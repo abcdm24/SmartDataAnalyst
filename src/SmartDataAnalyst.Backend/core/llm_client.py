@@ -21,7 +21,7 @@ api_key= AZURE_OPENAI_API_KEY,
 api_version="2024-12-01-preview")
 
 
-def ask_llm(prompt: str) -> str:
+async def ask_llm(prompt: str) -> str:
     """
     Sends a prompt to Azure OpenAI and returns the text output.
     """

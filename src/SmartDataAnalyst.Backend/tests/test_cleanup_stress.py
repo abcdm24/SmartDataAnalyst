@@ -3,7 +3,7 @@ import gc
 import psutil
 import pandas as pd
 import pytest
-from core.agent import Agent
+from core.agent_v12 import Agent_v12
 
 
 @pytest.fixture(scope="module")
@@ -21,9 +21,9 @@ def test_repeated_analyze_query_does_not_leak_memory(monkeypatch, df_sample, ite
     """
                              
     # Mock ask_llm to return a simple valid code each time
-    monkeypatch.setattr("core.agent.Agent", lambda prompt: "result = df['value'].mean()")
+    monkeypatch.setattr("core.agent_v12.ask_llm", lambda prompt: "result = df['value'].mean()")
 
-    agent = Agent()
+    agent = Agent_v12()
     process = psutil.Process()
     baseline_memory = process.memory_info().rss
 
@@ -43,7 +43,7 @@ def test_repeated_analyze_query_does_not_leak_memory(monkeypatch, df_sample, ite
 
 def test_cleanup_repeatedly_with_buffers(df_sample):    
     """Stress test cleanup directly for robustness."""
-    agent = Agent()
+    agent = Agent_v12()
 
     for _ in range(100):
         local_vars = {"df": df_sample.copy(), "temp": list(range(100))}
@@ -56,7 +56,7 @@ def test_cleanup_repeatedly_with_buffers(df_sample):
 
 def test_cleanup_resilience_to_partial_failures(monkeypatch):
     """Simulate cleanup raising an internal warning (e.g. faulty gc)."""        
-    agent = Agent()
+    agent = Agent_v12()
     cleanup_warnings = []
 
     def mock_gc_collect():

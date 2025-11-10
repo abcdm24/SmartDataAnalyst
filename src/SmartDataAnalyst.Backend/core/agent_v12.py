@@ -7,7 +7,7 @@ import gc
 import sys
 
 
-class Agent:
+class Agent_v12:
     def __init__(self):
         # Optional persistent attributes
         self._last_exec_env = None

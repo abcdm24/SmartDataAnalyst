@@ -7,3 +7,13 @@ python-multipart
 python-dotenv
 pytest
 psutil
+pytest-asyncio
+
+# Core memory components
+faiss-cpu==1.8.0.post1
+sentence-transformers==3.0.1
+numpy==1.26.4
+scikit-learn==1.5.1
+
+# For optional persistent store
+chromadb==0.5.4
