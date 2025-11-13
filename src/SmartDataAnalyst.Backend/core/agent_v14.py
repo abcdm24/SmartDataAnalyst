@@ -2,7 +2,8 @@ from .agent_v13 import Agent_v13
 from memory.retriever import ContextRetriever
 import io, contextlib, gc, pandas as pd
 from .llm_client import ask_llm
-
+import time
+import asyncio
 
 class Agent_v14(Agent_v13):
     """
@@ -11,17 +12,34 @@ class Agent_v14(Agent_v13):
     knowledge grounding for more intelligent analysis.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, filename: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.retriever = ContextRetriever() # FAISS + Embeddings setup
         self.faiss_index_path = "data/memory.index"
-
+        self.filename = filename
         # Try loading previously saved FAISS memory if available
         try:
             self.retriever.memory.load(self.faiss_index_path)
         except Exception:
             pass # start fresh if index not found
+        self.status = "active"
+        self.on_status_change = None
+        self.last_activity_time = time.time()
+    
+    async def _set_status(self, new_status: str):
 
+        if self.status != new_status and new_status == "idle":
+            await asyncio.sleep(2)
+
+        self.status = new_status
+        self.last_activity_time = time.time()
+        print(f"[Agent_v14] Status changed -> {new_status}")
+        if self.on_status_change:   
+            try:
+                self.on_status_change(self.filename, new_status)
+            except Exception as e:
+                print(f"[Agent_v14] Status callback error: {e}")
+            
 
     async def analyze_query(self, df: pd.DataFrame, question: str, use_memory: bool = True) -> str:
         """
@@ -29,7 +47,9 @@ class Agent_v14(Agent_v13):
         - Combines short-term 9session) and long-term (FAISS) context.
         - Automatically stores both query and response for future retrieval.
         """                
-
+        await self._set_status("analyzing")
+        await asyncio.sleep(2)
+        
         preview = df.head(5).to_csv(index=False)
 
         # --- STEP 1: Collect short-term memory ---
@@ -106,6 +126,9 @@ class Agent_v14(Agent_v13):
                 result_str = "No output returned."
         
             try:
+                await self._set_status("summarizing")
+                await asyncio.sleep(2)
+                
                 # Short-term
                 self.add_to_memory(question, result_str)
                 # Long-term
@@ -115,6 +138,8 @@ class Agent_v14(Agent_v13):
             except Exception:
                 pass
 
+            await self._set_status("idle")
+            
             self._last_result = result_str
             return result_str
         
@@ -139,3 +164,11 @@ class Agent_v14(Agent_v13):
                 gc.collect()
             except Exception:
                 pass
+
+    def get_status(self):
+        # return "active" if self.status else "idle"
+        # print(f"{time.time()} - {self.last_activity_time}")
+        if time.time() - self.last_activity_time > 120:
+            return "idle"
+        return self.status
+                
