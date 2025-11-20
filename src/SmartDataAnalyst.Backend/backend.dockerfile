@@ -1,14 +1,17 @@
 # backend.dockerfile
 FROM python:3.12.12-slim
 
+ENV PYTHONUNBUFFERED=1
+
 WORKDIR /app
 
 # Copy dependency list and install
-COPY src/SmartDataAnalyst.Backend/requirements.txt .
+COPY requirements.txt .
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend source code
-COPY src/SmartDataAnalyst.Backend/ .
+COPY . .
 
 # Expose FastAPI port
 EXPOSE 8000

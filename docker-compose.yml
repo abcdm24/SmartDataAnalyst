@@ -3,8 +3,8 @@ version: "3.9"
 services:
   backend:
     build:
-      context: .
-      dockerfile: src/SmartDataAnalyst.Backend/backend.dockerfile
+      context: ./src/SmartDataAnalyst.Backend
+      dockerfile: backend.dockerfile
     container_name: smartdataanalyst-backend
     ports:
       - "8000:8000"
@@ -12,4 +12,25 @@ services:
       - src/SmartDataAnalyst.Backend/.env
     volumes:
       - ./src/SmartDataAnalyst.Backend:/app
-    restart: always
+    restart: unless-stopped
+    networks:
+      - sda-network
+  
+  frontend:
+    build:
+      context: ./src/SmartDataAnalyst.Frontend
+      dockerfile: frontend.dockerfile
+    container_name: smartdataanalyst-frontend
+
+    ports:
+      - "5173:80"
+    environment:
+      - VITE_API_URL=http://backend:8000
+    restart: unless-stopped
+    networks:
+      - sda-network
+
+networks:
+  sda-network:
+    driver: bridge
+    

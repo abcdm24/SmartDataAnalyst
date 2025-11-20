@@ -7,6 +7,10 @@ import chardet
 from core.agent_v14 import Agent_v14
 import asyncio
 from datetime import datetime
+from services.history_service import HistoryService
+from database.database import get_session
+
+history_service = HistoryService()
 
 router = APIRouter(prefix="/api/data", tags=["Data Analysis"])
 
@@ -38,6 +42,7 @@ def record_status(filename: str, status: str):
         "status": status,
         "time": datetime.now().isoformat()
     })
+    
 
 def get_agent_for_file(filename):
     if filename not in AGENTS:
@@ -74,6 +79,17 @@ async def upload_csv(file: UploadFile = File(...)):
     # df = pd.read_csv(filepath)
     preview = df.head().to_dict(orient="records")
     print(preview)
+
+    # Save history entry for upload
+    async for db in get_session():
+        await history_service.add_entry(
+            db,
+            # event_type="upload",
+            file_name=file.filename,
+            question="Uploaded file",
+            answer=f"File uploaded with {len(df)} rows abd {len(df.columns)} columns"
+        )
+
     return {"filename": file.filename, "columns": list(df.columns), "preview": preview}
 
 
@@ -108,6 +124,16 @@ async def query_data(filename: str = Form(...), question: str = Form(...)):
         
         agent.last_activity_time = asyncio.get_event_loop().time()
         
+        # Save history
+        async for db in get_session():
+            await history_service.add_entry(
+                db,
+                # event_type="query",
+                file_name=filename,
+                question=question,
+                answer=answer
+            )
+
         return {"answer": answer}        
     
     except Exception as e:
@@ -137,6 +163,17 @@ async def ask_followup(filename: str = Form(...), question: str = Form(...)):
     # agent = Agent_v13()
     agent = get_agent_for_file(filename)
     answer = await agent.ask_followup(df, question)
+
+    # Save History
+    async for db in get_session():
+        await history_service.add_entry(
+            db,
+            # event_type="followup",
+            filename=filename,
+            question=question,
+            answer=answer
+        )
+
     return {"answer": answer}
 
 

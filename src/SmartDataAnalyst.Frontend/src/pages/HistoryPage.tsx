@@ -9,24 +9,39 @@ import {
 } from "react-bootstrap";
 //import axios from "axios";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { fetchHistory, clearHistory } from "../api/historyApi";
+import {
+  fetchHistory,
+  fetchHistoryItem,
+  clearHistory,
+  deleteHistoryItem,
+} from "../api/historyApi";
 
-interface HistoryItem {
+interface HistoryListItem {
   id: string;
-  fileName: string;
-  uploadDate: string;
-  queries: {
-    question: string;
-    answer: string;
-    timestamp: string;
-  }[];
+  file_name: string;
+  upload_date: string;
+  query_count: number;
+}
+
+interface HistoryQuery {
+  question: string;
+  answer: string;
+  timestamp: string;
+}
+
+interface HistorySession {
+  id: string;
+  file_name: string;
+  upload_date: string;
+  queries: HistoryQuery[];
 }
 
 const HistoryPage: React.FC = () => {
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [history, setHistory] = useState<HistoryListItem[]>([]);
+  const [selectedItem, setSelectedItem] = useState<HistorySession | null>(null);
   const [loading, setLoading] = useState(true);
+  const [modalLoading, setModalLoading] = useState(false);
   const [error, setError] = useState("");
-  const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null);
   const [showModal, setShowModal] = useState(false);
 
   //const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -39,7 +54,7 @@ const HistoryPage: React.FC = () => {
       //const res = await axios.get(`${API_BASE}/history`);
       //setHistory(res.data || []);
       const result = await fetchHistory();
-      setHistory(result);
+      setHistory(result || []);
     } catch (err) {
       console.error(err);
       setError("Failed to load history from backend.");
@@ -48,7 +63,36 @@ const HistoryPage: React.FC = () => {
     }
   };
 
-  const handleClear = async () => {
+  const handleViewDetails = async (id: string) => {
+    setModalLoading(true);
+    setSelectedItem(null);
+    setShowModal(true);
+
+    try {
+      const data = await fetchHistoryItem(id);
+      setSelectedItem(data);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load sessions details.");
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this session?")) return;
+    try {
+      await deleteHistoryItem(id);
+      setHistory(history.filter((h) => h.id !== id));
+      //loadHistory();
+    } catch (err) {
+      console.error(err);
+      setError("Failed to delete this history session.");
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (!confirm("Clear all history records?")) return;
     try {
       await clearHistory();
       setHistory([]);
@@ -62,25 +106,31 @@ const HistoryPage: React.FC = () => {
     loadHistory();
   }, []);
 
-  const handleViewDetails = (item: HistoryItem) => {
-    setSelectedItem(item);
-    setShowModal(true);
-  };
-
   return (
     <Container className="mt-4">
-      <h2 className="mb-3">Analysis History</h2>
+      <h2 className="mb-3 d-flex justify-content-between align-items-center">
+        Analysis History
+        <Button variant="danger" size="sm" onClick={handleClearAll}>
+          Clear All
+        </Button>
+      </h2>
 
       {error && <Alert variant="danger">{error}</Alert>}
+      {/* <div className="mb-3">
+        <Button variant="danger" onClick={handleClear}>
+          Clear All History
+        </Button>
+      </div> */}
       {loading ? (
         // <div className="text-center mt-5">
         //   <Spinner animation="border" />
         //   <p className="mt-2 text-muted">Loading history...</p>
         // </div>
         <LoadingSpinner text="Loading your history..." centered />
-      ) : error ? (
-        <Alert variant="danger">{error}</Alert>
-      ) : history.length === 0 ? (
+      ) : // : error ? (
+      //   <Alert variant="danger">{error}</Alert>
+      //)
+      history.length === 0 ? (
         <Alert variant="info">No history records found.</Alert>
       ) : (
         <Table striped bordered hover responsive>
@@ -88,7 +138,7 @@ const HistoryPage: React.FC = () => {
             <tr>
               <th>#</th>
               <th>File Name</th>
-              <th>Upload Date</th>
+              <th>Uploaded</th>
               <th>Queries</th>
               <th>Action</th>
             </tr>
@@ -97,16 +147,36 @@ const HistoryPage: React.FC = () => {
             {history.map((item, index) => (
               <tr key={item.id}>
                 <td>{index + 1}</td>
-                <td>{item.fileName}</td>
-                <td>{new Date(item.uploadDate).toLocaleString()}</td>
-                <td>{item.queries.length}</td>
+                <td>{item.file_name}</td>
+                <td>{new Date(item.upload_date).toLocaleString()}</td>
+                <td>{item.query_count}</td>
+                {/* <td
+                  style={{
+                    maxWidth: 250,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {item.query}
+                </td> */}
+                {/* <td>{new Date(item.timestamp).toLocaleString()}</td> */}
+
                 <td>
                   <Button
                     size="sm"
                     variant="outline-primary"
-                    onClick={() => handleViewDetails(item)}
+                    className="me-2"
+                    onClick={() => handleViewDetails(item.id)}
                   >
                     View
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline-danger"
+                    onClick={() => handleDelete(item.id)}
+                  >
+                    Delete
                   </Button>
                 </td>
               </tr>
@@ -121,14 +191,22 @@ const HistoryPage: React.FC = () => {
           <Modal.Title>Session Details</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {selectedItem ? (
+          {modalLoading ? (
+            <div className="text-center">
+              <Spinner animation="border" />
+              <p className="text-muted mt-2">Loading...</p>
+            </div>
+          ) : selectedItem ? (
             <>
-              <h5>{selectedItem.fileName}</h5>
+              <h5>{selectedItem.file_name}</h5>
               <p className="text-muted">
-                Uploaded in {new Date(selectedItem.uploadDate).toLocaleString()}
+                Uploaded on{" "}
+                {new Date(selectedItem.upload_date).toLocaleString()}
               </p>
 
-              {selectedItem.queries.length > 0 ? (
+              {selectedItem.queries.length === 0 ? (
+                <Alert variant="info">No queries recorded.</Alert>
+              ) : (
                 <Table bordered hover size="sm">
                   <thead>
                     <tr>
@@ -143,18 +221,17 @@ const HistoryPage: React.FC = () => {
                       <tr key={i}>
                         <td>{i + 1}</td>
                         <td>{q.question}</td>
-                        <td>{q.answer}</td>
+                        <td style={{ maxWidth: 350 }}>{q.answer}</td>
                         <td>{new Date(q.timestamp).toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
                 </Table>
-              ) : (
-                <Alert variant="info">No queries recorded for this file.</Alert>
               )}
             </>
           ) : (
-            <Spinner animation="border" />
+            // <Spinner animation="border" />
+            <Alert variant="warning">No session selected.</Alert>
           )}
         </Modal.Body>
       </Modal>

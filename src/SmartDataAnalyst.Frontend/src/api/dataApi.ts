@@ -4,7 +4,7 @@ export const uploadCsv = async (file: File) => {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await apiClient.post("/upload", formData, {
+  const response = await apiClient.post("/data/upload", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
@@ -16,7 +16,7 @@ export const queryData = async (file: string | undefined, query: string) => {
   const formData = new FormData();
   formData.append("filename", file!);
   formData.append("question", query);
-  const response = await apiClient.post("/query", formData, {
+  const response = await apiClient.post("/data/query", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   console.log(`response data: ${response.data}`);

@@ -15,7 +15,7 @@ const StatusIndicator: React.FC = () => {
     if (!currentFilename) return;
 
     const ws = new WebSocket(
-      `ws://localhost:8000/api/ws/agent-status?filename=${currentFilename}`
+      `ws://localhost:8000/api/data/ws/agent-status?filename=${currentFilename}`
     );
 
     ws.onmessage = (event) => {
@@ -30,7 +30,7 @@ const StatusIndicator: React.FC = () => {
       try {
         console.log(`Calling StatusIndicator: ${currentFilename}`);
         const res = await apiClient.get(
-          `/agent-status?filename=${currentFilename}`
+          `data/agent-status?filename=${currentFilename}`
         );
 
         console.log(`Status: ${res.data.status}`);

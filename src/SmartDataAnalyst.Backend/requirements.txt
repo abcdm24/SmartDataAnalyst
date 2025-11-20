@@ -17,3 +17,10 @@ scikit-learn==1.5.1
 
 # For optional persistent store
 chromadb==0.5.4
+
+# For SQlite Database
+sqlmodel==0.0.19
+sqlalchemy==2.0.36
+aiosqlite==0.20.0
+
+chardet
