@@ -5,7 +5,8 @@ WORKDIR /app
 
 COPY . .
 RUN bun install
-RUN bun run build
+ENV MODE_ENV=production
+RUN bun run build --mode production
 
 #Production stage (nginx)
 FROM nginx:alpine
