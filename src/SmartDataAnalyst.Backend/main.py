@@ -1,7 +1,11 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import data_analysis, history_router
 from database.database import init_db
+from dotenv import load_dotenv
+
+load_dotenv() # loads .env file
 
 app = FastAPI(title="SmartDataAnalyst API", version="1.0")
 
@@ -10,8 +14,10 @@ app = FastAPI(title="SmartDataAnalyst API", version="1.0")
 async def on_startup():
     await init_db()
 
+frontend_origin= os.getenv("FRONTEND_ORIGIN","http://localhost:5173")
+
 origins = [
-    "http://localhost:5173"
+    frontend_origin
 ]
 
 app.add_middleware(

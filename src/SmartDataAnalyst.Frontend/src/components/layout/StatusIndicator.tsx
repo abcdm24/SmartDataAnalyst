@@ -15,7 +15,9 @@ const StatusIndicator: React.FC = () => {
     if (!currentFilename) return;
 
     const ws = new WebSocket(
-      `ws://localhost:8000/api/data/ws/agent-status?filename=${currentFilename}`
+      `${
+        import.meta.env.VITE_WS_BASE_URL
+      }/data/ws/agent-status?filename=${currentFilename}`
     );
 
     ws.onmessage = (event) => {
