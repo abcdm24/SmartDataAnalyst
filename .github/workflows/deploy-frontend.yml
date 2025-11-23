@@ -1,0 +1,44 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "src/SmartDataAnalyst.Frontend/**"
+      - ".github/workflows/deploy-frontend.yml"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout code
+      - uses: actions/checkout@v3
+
+      # Login to Azure
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # Login to ACR
+      - name: Login to ACR
+        run: |
+          az acr login --name ${{ secrets.ACR_NAME }}
+
+      # Build & push image
+      - name: Build and Push Frontend Image
+        run: |
+          cd src/SmartDataAnalyst.Frontend
+
+          docker build \
+          -t ${{ secrets.ACR_LOGIN_SERVER }}/frontend:latest \
+          -f frontend_azure.dockerfile .
+
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/frontend:latest
+
+      # Deploy to Web App
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: "${{ secrets.AZURE_WEBAPP_FRONTEND }}"
+          images: "${{ secrets.ACR_LOGIN_SERVER }}/frontend:latest"
