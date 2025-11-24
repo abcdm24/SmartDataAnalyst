@@ -14,6 +14,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: true
+          lfs: false
 
       - name: Install Bun
         uses: oven-sh/setup-bun@v1
@@ -26,10 +29,13 @@ jobs:
         working-directory: src/SmartDataAnalyst.Frontend
         run: bun run build
 
-      - name: Debug — Show folder structure only
+      - name: Debug — List files excluding node_modules
         run: |
-          echo "=== Folder tree (no node_modules) ==="
-          find . -type d -not -path "*/node_modules/*"
+          echo "=== Root Directory (excluding node_modules) ==="
+          find . -type d -name node_modules -prune -o -print
+
+          echo "=== Frontend Directory (excluding node_modules) ==="
+          find src/SmartDataAnalyst.Frontend -type d -name node_modules -prune -o -print
 
           echo "=== DIST Directory ==="
           ls -R src/SmartDataAnalyst.Frontend/dist || echo "dist folder NOT FOUND"
@@ -46,4 +52,4 @@ jobs:
           app_artifact_location: "src/SmartDataAnalyst.Frontend/dist"
 
           # 🚫 Disable Oryx completely
-          skip_app_build: true
+          skip_app_build: false
