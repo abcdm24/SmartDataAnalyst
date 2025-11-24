@@ -26,13 +26,10 @@ jobs:
         working-directory: src/SmartDataAnalyst.Frontend
         run: bun run build
 
-      - name: Debug — List files before deploy
+      - name: Debug — Show folder structure only
         run: |
-          echo "=== Root Directory ==="
-          ls -R .
-
-          echo "=== Frontend Directory ==="
-          ls -R src/SmartDataAnalyst.Frontend
+          echo "=== Folder tree (no node_modules) ==="
+          find . -type d -not -path "*/node_modules/*"
 
           echo "=== DIST Directory ==="
           ls -R src/SmartDataAnalyst.Frontend/dist || echo "dist folder NOT FOUND"
