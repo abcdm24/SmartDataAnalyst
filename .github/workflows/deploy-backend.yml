@@ -1,8 +1,9 @@
-name: Deploy Backend
+name: Deploy Backend to Azure Container Apps
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
     paths:
       - "src/SmartDataAnalyst.Backend/**"
       - ".github/workflows/deploy-backend.yml"
@@ -10,33 +11,49 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    name: Build & Deploy Backend to Azure Container Apps
+
     steps:
       # Checkout code
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
+      # -----------------------------
       # Login to Azure
-      - uses: azure/login@v1
+      # -----------------------------
+      - name: Azure Login
+        uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      # -----------------------------
       # Login to ACR
+      # -----------------------------
       - name: Login to ACR
         run: |
           az acr login --name ${{ secrets.ACR_NAME }}
 
-      # Build & push image
-      - name: Build and Push Backend Image
+      # -----------------------------
+      # Build & push Docker Image
+      # -----------------------------
+      - name: Build and Push Backend Image to ACR
         run: |
-          cd src/SmartDataAnalyst.Backend
+          IMAGE_NAME=${{ secrets.ACR_LOGIN_SERVER }}/smartdataanalyst-backend:$(date +%s)
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
 
           docker build \
-          -t ${{ secrets.ACR_LOGIN_SERVER }}/backend:latest \
-          -f backend_azure.dockerfile .
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/backend:latest
+          -t $IMAGE_NAME
+          -f src/SmartDataAnalyst.Backend/backend_azure.dockerfile \
+          src/SmartDataAnalyst.Backend
 
-      # Deploy to Azure Web App
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: "${{ secrets.AZURE_WEBAPP_FRONTEND}}"
-          images: "${{ secrets.ACR_LOGIN_SERVER }}/backend:latest"
+          docker push $IMAGE_NAME
+
+      # ------------------------------
+      # Deploy to Azure Container Apps
+      # -----------------------------
+      - name: Deploy to Azure Container Apps
+        run: |
+          az containerapp update \
+          --name ${{ secrets.AZURE_WEBAPP_BACKEND }} \
+          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+          --image $IMAGE_NAME
