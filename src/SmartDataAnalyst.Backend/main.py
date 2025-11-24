@@ -14,10 +14,12 @@ app = FastAPI(title="SmartDataAnalyst API", version="1.0")
 async def on_startup():
     await init_db()
 
-frontend_origin= os.getenv("FRONTEND_ORIGIN","http://localhost:5173")
+#frontend_origin= os.getenv("FRONTEND_ORIGIN","http://localhost:5173")
 
 origins = [
-    frontend_origin
+    #frontend_origin
+    "http://localhost:5173",
+    "https://kind-stone-0dcb77a00.3.azurestaticapps.net/"
 ]
 
 app.add_middleware(
