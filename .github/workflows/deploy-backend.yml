@@ -42,7 +42,7 @@ jobs:
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
 
           docker build \
-          -t $IMAGE_NAME
+          -t $IMAGE_NAME \
           -f src/SmartDataAnalyst.Backend/backend_azure.dockerfile \
           src/SmartDataAnalyst.Backend
 
