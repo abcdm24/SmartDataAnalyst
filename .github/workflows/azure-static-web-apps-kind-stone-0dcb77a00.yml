@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "src/SmartDataAnalyst.Frontend/**"
-      - ".github/workflows/azure-static-web-app.yml"
+      - ".github/workflows/azure-static-web-apps-kind-stone-0dcb77a00.yml"
 
 jobs:
   build_and_deploy:
