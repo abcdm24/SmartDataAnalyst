@@ -1,5 +1,5 @@
 name: Deploy Frontend to Azure Static Web Apps CI/CD
-
+# Updated the code
 on:
   push:
     branches:
