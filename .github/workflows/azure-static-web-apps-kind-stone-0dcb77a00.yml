@@ -26,6 +26,17 @@ jobs:
         working-directory: src/SmartDataAnalyst.Frontend
         run: bun run build
 
+      - name: Debug — List files before deploy
+        run: |
+          echo "=== Root Directory ==="
+          ls -R .
+
+          echo "=== Frontend Directory ==="
+          ls -R src/SmartDataAnalyst.Frontend
+
+          echo "=== DIST Directory ==="
+          ls -R src/SmartDataAnalyst.Frontend/dist || echo "dist folder NOT FOUND"
+
       - name: Deploy to Azure Static Web Apps (Skip Oryx)
         uses: Azure/static-web-apps-deploy@v1
         with:
