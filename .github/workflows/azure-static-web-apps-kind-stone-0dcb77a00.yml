@@ -29,6 +29,13 @@ jobs:
         working-directory: src/SmartDataAnalyst.Frontend
         run: bun run build
 
+      - name: Show Build output
+        run: |
+          echo "=== Checking Vite output directory ==="  
+          ls -al src/SmartDataAnalyst.Frontend/dist || echo "No dist folder found"
+          echo "=== Nested structure ==="
+          find src/SmartDataAnalyst.Frontend/dist -maxdepth 3 -type f
+
       - name: Debug — List files excluding node_modules
         run: |
           echo "=== Root Directory (excluding node_modules) ==="
@@ -52,4 +59,4 @@ jobs:
           app_artifact_location: "src/SmartDataAnalyst.Frontend/dist"
 
           # 🚫 Disable Oryx completely
-          skip_app_build: false
+          skip_app_build: true
