@@ -43,7 +43,7 @@ jobs:
 
           # Tell SWA where your compiled files are
           app_location: "src/SmartDataAnalyst.Frontend"
-          app_artifact_location: "dist"
+          app_artifact_location: "src/SmartDataAnalyst.Frontend/dist"
 
           # 🚫 Disable Oryx completely
           skip_app_build: true
