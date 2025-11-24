@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "src/SmartDataAnalyst.Frontend/**"
-      - ".github/workflows/azure-static-web-app.yml"
+      - ".github/workflows/azure-static-web-apps-happy-bush-015cd6800.yml"
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
