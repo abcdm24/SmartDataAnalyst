@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY . .
 RUN bun install
-ENV MODE_ENV=production
+ENV NODE_ENV=production
 RUN bun run build --mode production
 
 #Production stage (nginx)

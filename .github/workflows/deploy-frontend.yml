@@ -27,12 +27,14 @@ jobs:
 
       # Build & push image
       - name: Build and Push Frontend Image
+        env:
+          NODE_ENV: production
         run: |
           cd src/SmartDataAnalyst.Frontend
 
           docker build \
           -t ${{ secrets.ACR_LOGIN_SERVER }}/frontend:latest \
-          -f frontend_azure.dockerfile .
+          -f frontend_azure.dockerfile .     
 
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/frontend:latest
 
