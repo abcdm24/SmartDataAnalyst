@@ -4,7 +4,7 @@ import pandas as pd
 import os
 import chardet
 # from core.agent import analyze_query
-from core.agent_v14 import Agent_v14
+from core.agent_v15 import Agent_v15
 import asyncio
 from datetime import datetime
 from services.history_service import HistoryService
@@ -46,7 +46,7 @@ def record_status(filename: str, status: str):
 
 def get_agent_for_file(filename):
     if filename not in AGENTS:
-        agent = Agent_v14(filename)
+        agent = Agent_v15(filename)
         AGENTS[filename] = agent
 
         def handle_status_change(filename, new_status):
