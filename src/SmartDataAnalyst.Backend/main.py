@@ -1,4 +1,6 @@
 import os
+# from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+# from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import data_analysis, history_router
@@ -8,6 +10,9 @@ from dotenv import load_dotenv
 load_dotenv() # loads .env file
 
 app = FastAPI(title="SmartDataAnalyst API", version="1.0")
+
+# app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
+# app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
 
 
 @app.on_event("startup")
@@ -19,7 +24,7 @@ frontend_origin= os.getenv("FRONTEND_ORIGIN","http://localhost:5173")
 origins = [
     frontend_origin,
     "http://localhost:5173",
-    "https://kind-stone-0dcb77a00.3.azurestaticapps.net/"
+    "https://kind-stone-0dcb77a00.3.azurestaticapps.net"
 ]
 
 app.add_middleware(
