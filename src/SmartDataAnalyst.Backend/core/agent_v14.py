@@ -44,7 +44,7 @@ class Agent_v14(Agent_v13):
     async def analyze_query(self, df: pd.DataFrame, question: str, use_memory: bool = True) -> str:
         """
         Enhanced version of analyze_query:
-        - Combines short-term 9session) and long-term (FAISS) context.
+        - Combines short-term (session) and long-term (FAISS) context.
         - Automatically stores both query and response for future retrieval.
         """                
         await self._set_status("analyzing")
