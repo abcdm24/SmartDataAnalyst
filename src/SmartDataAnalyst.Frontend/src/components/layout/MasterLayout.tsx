@@ -11,7 +11,10 @@ const MasterLayout: React.FC = () => {
   return (
     <div className="d-flex vh-100 overflow-hidden">
       {isSidebarOpen && (
-        <div className="p-0" style={{ width: "240px", minHeight: "100vh" }}>
+        <div
+          className="bg-dark text-white p-0"
+          style={{ width: "240px", minHeight: "100vh" }}
+        >
           <Sidebar />
         </div>
       )}
