@@ -7,6 +7,7 @@ import asyncio
 import json
 import textwrap
 #import numpy as np
+from string import Template
 
 #soft sandboxed builtins (not secure for untrusted code - replace with subprocess in prod)
 _SAFE_BUILTINS = {
@@ -113,18 +114,21 @@ class Agent_v15(Agent_v14):
         if ltm_context:
             combined_context += f"\n[Long-Term Memory]\n{ltm_context}\n"
 
-        prompt = textwrap.dedent(f"""
-        You are a careful data analyst assistant. The dataframe is already loaded as `df`.
+        print(f"Combined context:\n{combined_context}")
+
+        prompt_template = Template(textwrap.dedent(f"""
+        Based on the following dataframe and the conversation history, answer the user query.
+        The dataframe is already loaded as `df`.
         Provide only a JSON object (no additional text). The JSON must contain these keys:
         - action: one of ["code","rows","answer"].
         - code: (string) valid Python (pandas) code to run which will compute the answer. 
         If you return code, ensure final answer is saved into a variable named 'result'.
-        - rows_filter: (optional) a short pandas-style boolean expression 
+        - rows_filter: (optional) a short pandas-style boolean expression.
         (e.g., "company == 'Company A'") that can be used to filter df.
         - target_columns: a list of column names that the user is asking for.
         - explain: (optional) short explanation (1-2 sentences).
         Rules:
-        - If the user asks about a sepcific column, include only that column.
+        - If the user asks about a specific columns, include only those columns.
         - If the user asks about multiple attributes, return all relevant columns.
         - If the user asks a broad question (e.g. "show details"), return an empty list.
         - Column names must match the CSV columns exactly.
@@ -134,50 +138,56 @@ class Agent_v15(Agent_v14):
         User: "Give me the model name where primary use case is image generation."
 
         Your output:
-        {
+        {{
         "rows_filter": "Primary Use Case == 'Image Generation'",
         "target_columns": ["Model Name"]
-        }
+        }}
 
         User: "Which developers created models for image generation?"
 
         Your output:
-        {
+        {{
         "rows_filter": "Primary Use Case == 'Image Generation'",
         "target_columns": ["Developer"]
-        }             
+        }}           
 
         User: "Show models with parameters above 1 billion."
 
         Your output:
-        {
+        {{
         "rows_filter": "`Parameters (Billions)` > 1",
         "target_columns": ["Model Name", "Parameters (Billions)"]
-        }
+        }}
 
         User: "Show all rows where release year is 2022."
 
         Your output:
-        {
+        {{
         "rows_filter": "`Release Year` == 2022",
         "target_columns": []
-        }                    
+        }}                 
 
         If the user question refers to "those/them/previous", resuse the provided
         previously-used rows passed below.
         Do not access external resources. Avoid any filesystem or netwrok operations.
         Dataset sample (first 5 rows):        
-        {preview}
+        $preview
 
-        Question: {question}
+        Question: $question
 
         Relevant conversation context (if any):
-        {combined_context}
+        $combined_context
 
         If you return "action": "rows", include rows_filter or a small csv snippet
         in `code` as CSV string.
         Output strictly parseable JSON.
-        """)
+        """))
+
+        prompt = prompt_template.substitute(
+            preview = preview,
+            question = question,
+            combined_context = combined_context
+        )
 
         # Step 2: Get code from LLM
         try:
