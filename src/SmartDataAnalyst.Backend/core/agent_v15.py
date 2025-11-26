@@ -32,7 +32,7 @@ class Agent_v15(Agent_v14):
     """
 
     def __init__(self, filename: str, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(filename, *args, **kwargs)
         self.retriever = ContextRetriever() # FAISS + Embeddings setup
         self.faiss_index_path = "data/memory.index"
         self.filename = filename
@@ -44,6 +44,7 @@ class Agent_v15(Agent_v14):
         self.status = "active"
         self.on_status_change = None
         self.last_activity_time = time.time()
+        self._last_context_rows = None  # to store last filtered rows
 
     # helper to detect references to previous context
     def refers_to_previous_context(self, question: str) -> bool:
@@ -99,7 +100,7 @@ class Agent_v15(Agent_v14):
         context_rows_df = None
         if self.refers_to_previous_context(question) and getattr(self, "_last_context_rows", None) is not None:            
             reuse_rows = True
-            context_rows_df = self.last_context_rows
+            context_rows_df = self._last_context_rows
         else:
             # We'll attempt to construct a small filtered df sample
             # for LLM to reason on but we keep the full df for code execution
@@ -120,7 +121,48 @@ class Agent_v15(Agent_v14):
         If you return code, ensure final answer is saved into a variable named 'result'.
         - rows_filter: (optional) a short pandas-style boolean expression 
         (e.g., "company == 'Company A'") that can be used to filter df.
+        - target_columns: a list of column names that the user is asking for.
         - explain: (optional) short explanation (1-2 sentences).
+        Rules:
+        - If the user asks about a sepcific column, include only that column.
+        - If the user asks about multiple attributes, return all relevant columns.
+        - If the user asks a broad question (e.g. "show details"), return an empty list.
+        - Column names must match the CSV columns exactly.
+        - Do not create new column names.
+        Example:
+
+        User: "Give me the model name where primary use case is image generation."
+
+        Your output:
+        {
+        "rows_filter": "Primary Use Case == 'Image Generation'",
+        "target_columns": ["Model Name"]
+        }
+
+        User: "Which developers created models for image generation?"
+
+        Your output:
+        {
+        "rows_filter": "Primary Use Case == 'Image Generation'",
+        "target_columns": ["Developer"]
+        }             
+
+        User: "Show models with parameters above 1 billion."
+
+        Your output:
+        {
+        "rows_filter": "`Parameters (Billions)` > 1",
+        "target_columns": ["Model Name", "Parameters (Billions)"]
+        }
+
+        User: "Show all rows where release year is 2022."
+
+        Your output:
+        {
+        "rows_filter": "`Release Year` == 2022",
+        "target_columns": []
+        }                    
+
         If the user question refers to "those/them/previous", resuse the provided
         previously-used rows passed below.
         Do not access external resources. Avoid any filesystem or netwrok operations.
@@ -204,10 +246,13 @@ class Agent_v15(Agent_v14):
         code = json_obj.get("code", "")
         rows_filter = json_obj.get("rows_filter")
         explain = json_obj.get("explain", "")
+        target_columns = json_obj.get("target_columns","")
 
+        print(f"Parsed LLM response JSON: action={action}, rows_filter={rows_filter}, code={code}, explain={explain}")
         # If the LLM suggests a rows_filter and we didn't reuse rows,
         # apply it to build context_rows_df
         if rows_filter and not reuse_rows:
+            print("reuse_rows false")
             try:
                 # safe eval: use pandas query on df
                 context_rows_df = df.query(rows_filter)
@@ -218,9 +263,12 @@ class Agent_v15(Agent_v14):
         
         # If action == "rows", return the preview of context_rows_df
         if action == "rows":
+            print("Action is rows")
             if context_rows_df is None:
+                print("context_rows_df is None")
                 # maybe LLM put CSV in code
                 if code:
+                    print("actions rows but there is code")
                     # attempt to parse CSV snippet returned in code
                     try:
                         from io import StringIO
@@ -238,9 +286,32 @@ class Agent_v15(Agent_v14):
                     except Exception as e:
                         await self._set_status("idle")
                         return f"Could not parse rows returned by agent: {e}"
+                
+                if rows_filter:
+                    print("Applying rows filter")
+                    try:
+                        filter = self.clean_filter(rows_filter)
+                        print(f"Filter: {filter}")
+                        print(df)
+                        filtered_df = df.query(filter)
+                        print(filtered_df)
+
+                        if "target_columns" in json_obj and json_obj["target_columns"]:
+                            target_cols = json_obj["target_columns"]                            
+                            reduced_df = filtered_df[target_cols]
+                            return reduced_df.to_markdown(index=False)
+                        
+                        #rows_text = filtered_df.to_string(index=False)
+                        #print(f"rows_text: {rows_text}")
+                        #return rows_text
+                        return filtered_df.to_markdown(index=False)
+                    except Exception as e:
+                        return {"error": f"failed to apply rows_filter: {rows_filter}","details": str(e)}
+                        
                 await self._set_status("idle")
                 return "No rows could be generated."
             else:
+                print("Returning context_rows_df preview")
                 preview_rows = context_rows_df.head(50).to_csv(index=False)
                 try:
                     self.add_to_memory(question, f"Provided rows preview ({len(context_rows_df)} rows).")
@@ -282,7 +353,7 @@ class Agent_v15(Agent_v14):
                         self._last_context_rows = exec_env["filtered_df"].copy()
                         result_str = f"Returned {len(self._last_context_rows)} rows (preview attached)."
                     else:
-                        result-str = "Code executed; no `result` variable found."
+                        result_str = "Code executed; no `result` variable found."
 
                 # update memories
                 try:
@@ -314,4 +385,24 @@ class Agent_v15(Agent_v14):
         if time.time() - self.last_activity_time > 120:
             return "idle"
         return self.status
+    
+    def clean_filter(self, filter:str)-> str:
+        import re
+
+        # Remove df[...] wrapper: df['col'] → 'col'
+        filter = re.sub(r"df\[(.*?)\]", r"\1", filter)
+
+        # Now f looks like: `'Primary Use Case' == 'Image Generation'`
+
+        # Convert ONLY the left-hand side column name to backticks
+        # Pattern: `'something' ==`
+        filter = re.sub(r"^'([^']+)'\s*==", r"`\1` == ", filter)
+
+        # Convert remaining column names in df['col'] expressions (if any)
+        filter = re.sub(r"'([^']+)'\s*([<>=!]=?)", r"`\1` \2", filter)
+
+        # Make sure the value stays quoted (convert single to double quotes)
+        filter = re.sub(r"==\s*'([^']+)'", r'== "\1"', filter)
+
+        return filter
                 

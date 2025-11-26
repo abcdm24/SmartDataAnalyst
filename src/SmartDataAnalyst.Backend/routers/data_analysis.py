@@ -9,6 +9,7 @@ import asyncio
 from datetime import datetime
 from services.history_service import HistoryService
 from database.database import get_session
+import json
 
 history_service = HistoryService()
 
@@ -124,6 +125,9 @@ async def query_data(filename: str = Form(...), question: str = Form(...)):
         
         agent.last_activity_time = asyncio.get_event_loop().time()
         
+        if isinstance(answer, dict):
+            answer = json.dumps(answer)
+
         # Save history
         async for db in get_session():
             await history_service.add_entry(
