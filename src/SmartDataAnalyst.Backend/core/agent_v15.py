@@ -8,6 +8,8 @@ import json
 import textwrap
 #import numpy as np
 from string import Template
+from utils.json_repair import repair_json
+
 
 #soft sandboxed builtins (not secure for untrusted code - replace with subprocess in prod)
 _SAFE_BUILTINS = {
@@ -139,6 +141,7 @@ class Agent_v15(Agent_v14):
 
         Your output:
         {{
+        "action": "rows",
         "rows_filter": "Primary Use Case == 'Image Generation'",
         "target_columns": ["Model Name"]
         }}
@@ -147,6 +150,7 @@ class Agent_v15(Agent_v14):
 
         Your output:
         {{
+        "action": "rows",                                                   
         "rows_filter": "Primary Use Case == 'Image Generation'",
         "target_columns": ["Developer"]
         }}           
@@ -155,6 +159,7 @@ class Agent_v15(Agent_v14):
 
         Your output:
         {{
+        "action": "rows",                                                   
         "rows_filter": "`Parameters (Billions)` > 1",
         "target_columns": ["Model Name", "Parameters (Billions)"]
         }}
@@ -163,6 +168,7 @@ class Agent_v15(Agent_v14):
 
         Your output:
         {{
+        "action": "rows",                                                   
         "rows_filter": "`Release Year` == 2022",
         "target_columns": []
         }}                 
@@ -191,9 +197,10 @@ class Agent_v15(Agent_v14):
 
         # Step 2: Get code from LLM
         try:
-            raw_llm = await ask_llm(prompt)
+            raw_llm = await ask_llm(prompt)            
+            # json_obj, clean_json = await repair_json(raw_llm)             
         except Exception as e:
-            self._set_status("idle")
+            await self._set_status("idle")
             return f"Error calling LLM: {e}"
         
         # First try to extract JSON from raw output
@@ -220,7 +227,7 @@ class Agent_v15(Agent_v14):
 
 
             # Execute in isolated namespace
-            exec_env = {"df": df}
+            exec_env = {"df": df, "pd": pd}
             try:
                 # execute with reduced builtins
                 exec_globals = {"__builtins__": _SAFE_BUILTINS}
@@ -345,10 +352,12 @@ class Agent_v15(Agent_v14):
                 return ans
             
             # execute provided code
-            exec_env = {"df": df}
+            exec_env = {"df": df, "pd": pd}
             try:
-                exec_globals = {"__builtins__": _SAFE_BUILTINS}
+                exec_globals = {"__builtins__": _SAFE_BUILTINS, "pd" : pd}
                 cleaned_code = self.clean_code_block(code)
+                
+                # print("Executing cleaned code:\n", cleaned_code)
                 # allow the LLM to put `filtered_df = df[...]` so we can store it
                 with contextlib.redirect_stdout(io.StringIO()) as _tmp_out:
                     exec(cleaned_code, exec_globals, exec_env)
@@ -402,7 +411,7 @@ class Agent_v15(Agent_v14):
         # Remove df[...] wrapper: df['col'] → 'col'
         filter = re.sub(r"df\[(.*?)\]", r"\1", filter)
 
-        # Now f looks like: `'Primary Use Case' == 'Image Generation'`
+        # Now filter looks like: `'Primary Use Case' == 'Image Generation'`
 
         # Convert ONLY the left-hand side column name to backticks
         # Pattern: `'something' ==`

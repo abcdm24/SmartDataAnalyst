@@ -187,7 +187,7 @@ class Agent_v13:
             
             joined = "\n\n".join(entries)
             prompt = f"""
-            You are a concise assistant that summarized a conversation between a user and a 
+            You are a content assistant that summarized a conversation between a user and a 
             data analysis agent. Given the following recent Q/A pairs, produce a short bullet 
             or paragraph summary (1-3 sentence) capturing:
             - The user's main recurring goals
