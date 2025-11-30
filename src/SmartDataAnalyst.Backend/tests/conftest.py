@@ -24,5 +24,5 @@ def mock_llm():
     Prevents readl Azure/OpenAI calls.
     """
 
-    with patch("src.SmartDataAnalyst.Backend.core.llm_client.ask_llm", AsyncMock(return_value='{"action":"done"}')):
+    with patch("core.llm_client.ask_llm", AsyncMock(return_value='{"action":"done"}')):
         yield
