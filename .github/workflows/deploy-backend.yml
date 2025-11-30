@@ -9,14 +9,35 @@ on:
       - ".github/workflows/deploy-backend.yml"
 
 jobs:
-  build-and-deploy:
+  test-build-and-deploy:
     runs-on: ubuntu-latest
-    name: Build & Deploy Backend to Azure Container Apps
+    name: Test -> Build & Deploy Backend to Azure Container Apps
 
     steps:
       # Checkout code
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      # -----------------------------
+      # Setup Python for Test Execution
+      # -----------------------------
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          pip install -r src/SmartDataAnalyst.Backend/requirements.txt
+          pip install pytest pytest-asyncio
+
+      # -----------------------------
+      # Setup Python for Test Execution
+      # -----------------------------
+      - name: Run Unit Tests
+        run: |
+          pytest -vv
 
       # -----------------------------
       # Login to Azure
