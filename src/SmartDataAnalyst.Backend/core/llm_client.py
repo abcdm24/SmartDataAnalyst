@@ -12,13 +12,15 @@ AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
 AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
 AZURE_OPENAI_DEPLOYMENT_NAME = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
 
-print(AZURE_OPENAI_ENDPOINT)
-print(AZURE_OPENAI_DEPLOYMENT_NAME)
+# print(AZURE_OPENAI_ENDPOINT)
+# print(AZURE_OPENAI_DEPLOYMENT_NAME)
 
 #Initialize Azure OpenAI client
-client = AzureOpenAI(azure_endpoint=AZURE_OPENAI_ENDPOINT,
-api_key= AZURE_OPENAI_API_KEY,
-api_version="2024-12-01-preview")
+
+async def get_client():
+    return AzureOpenAI(azure_endpoint=AZURE_OPENAI_ENDPOINT,
+    api_key= AZURE_OPENAI_API_KEY,
+    api_version="2024-12-01-preview")
 
 
 async def ask_llm(prompt: str) -> str:
@@ -47,7 +49,9 @@ async def ask_llm(prompt: str) -> str:
     - Ensure python code is syntactically correct and users `df` as the dataframe variable.
     """
 
-    response = client.chat.completions.create(
+    client = await get_client()
+
+    response = await client.chat.completions.create(
         # model=AZURE_OPENAI_DEPLOYMENT_NAME,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
