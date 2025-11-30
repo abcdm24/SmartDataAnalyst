@@ -14,6 +14,8 @@ from typing import Dict, Any, Tuple
 from .llm_client import ask_llm           # existing LLM wrapper
 from utils.json_repair import repair_json  # your repair helper
 from sdcmm.sdcmm import SDCM              # new SDCM module (ChromaDB + SQLite)
+from utils.normalizer import normalize_dataframe
+
 
 # safe builtin subset for exec
 _SAFE_BUILTINS = {
@@ -149,6 +151,9 @@ class Agent_v16(Agent_v13):
         # slight delay to keep parity with v15 behaviour
         await asyncio.sleep(2)
 
+        # automatic cleaning
+        df = normalize_dataframe(df)
+
         preview = df.head(5).to_csv(index=False)
 
         # --- STEP 1: Collect short-term memory (use existing get_memory_context if present)
@@ -218,6 +223,8 @@ class Agent_v16(Agent_v13):
             combined_context += f"\n[Short-Term Memory]\n{stm_context}\n"
         if sdc_context:
             combined_context += f"\n[Structured Data Memory]\n{sdc_context}\n"
+
+        print(f"Combined context:\n{combined_context}")
 
         return combined_context, reuse_rows
     
