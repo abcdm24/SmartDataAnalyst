@@ -47,7 +47,7 @@ async def test_analyze_query_mocked(monkeypatch):
             print("-> returning recall memory response")
             return "result = 'Previously, Tokyo had the highest population."
     
-    monkeypatch.setattr("core.llm_client.ask_llm", fake_llm)
+    # monkeypatch.setattr("core.llm_client.ask_llm", fake_llm)
 
     # --- Step 4: Run first query ---
     question_1 = "Which city has the highest population?"

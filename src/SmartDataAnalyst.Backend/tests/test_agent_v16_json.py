@@ -15,7 +15,7 @@ async def test_extract_valid_json(monkeypatch):
     """
 
     # Patch LLM
-    monkeypatch.setattr("core.agent_v16.ask_llm", lambda prompt: raw)
+    # monkeypatch.setattr("core.agent_v16.ask_llm", lambda prompt: raw)
 
     df = pd.DataFrame({"age": [20,40]})
     response = await agent.analyze_query(df, "people older than 30")
