@@ -24,3 +24,6 @@ sqlalchemy==2.0.36
 aiosqlite==0.20.0
 
 chardet
+
+# For vector database
+chromadb >= 0.5.0
