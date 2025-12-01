@@ -21,7 +21,7 @@ def test_memory_add_and_get_context():
     ctx = agent.get_memory_context("Now what?", char_budget=500)
     assert "How many rows?" in ctx and "Average value?" in ctx
 
-
+@pytest.mark.asyncio
 async def test_followup_uses_memory(monkeypatch):
     #monkeypatch ask_llm to exho prompt so we can observe memory included
     captured = {}
