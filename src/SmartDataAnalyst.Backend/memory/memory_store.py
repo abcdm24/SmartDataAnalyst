@@ -10,10 +10,16 @@ class MemoryStore:
         self.index_path = index_path
 
     def save(self, path: str):
+        print("memorytore save called")
+        full_index_path = os.path.abspath(path)
+        print("Saving FAISS index to:", full_index_path)
         faiss.write_index(self.index, path)
+        txt_path = os.path.abspath(path + ".txt")
+        print("Saving FAISS .txt to:", txt_path)
         with open(path + ".txt", "w", encoding="utf-8") as f:
             for t in self.texts:
                 f.write(t.replace("\n", " ") + "\n")
+        print(f"memory saved in")
 
     def load(self, path: str):
         if os.path.exists(path):
