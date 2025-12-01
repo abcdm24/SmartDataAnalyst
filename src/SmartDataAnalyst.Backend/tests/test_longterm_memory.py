@@ -30,8 +30,8 @@ async def test_analyze_query_creates_and_uses_memory(monkeypatch, tmp_path):
         try:
             if os.path.exists(f):
                 os.remove(f)
-        except:
-            pass
+        except Exception as e:
+            print(f"Error: {e}")
 
     # ---------- MOCK ask_llm ----------
     async def fake_llm(prompt: str):
