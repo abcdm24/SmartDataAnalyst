@@ -11,11 +11,18 @@ class MemoryStore:
 
     def save(self, path: str):
         print("memorytore save called")
+
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+
         full_index_path = os.path.abspath(path)
         print("Saving FAISS index to:", full_index_path)
         faiss.write_index(self.index, path)
+
         txt_path = os.path.abspath(path + ".txt")
+        os.makedirs(os.path.dirname(txt_path), exist_ok=True)
         print("Saving FAISS .txt to:", txt_path)
+        
         with open(path + ".txt", "w", encoding="utf-8") as f:
             for t in self.texts:
                 f.write(t.replace("\n", " ") + "\n")
