@@ -22,7 +22,7 @@ async def test_analyze_query_mocked(monkeypatch):
     })
 
     # --- Step 2: Create agent instance ---
-    agent = Agent_v14()
+    agent = Agent_v14("movie_ratings.csv")
 
     # --- Step 3: Mock the LLM call to return fake code ---
     async def fake_llm(prompt):
@@ -47,7 +47,7 @@ async def test_analyze_query_mocked(monkeypatch):
             print("-> returning recall memory response")
             return "result = 'Previously, Tokyo had the highest population."
     
-    # monkeypatch.setattr("core.llm_client.ask_llm", fake_llm)
+    monkeypatch.setattr("core.agent_v14.ask_llm", fake_llm)
 
     # --- Step 4: Run first query ---
     question_1 = "Which city has the highest population?"

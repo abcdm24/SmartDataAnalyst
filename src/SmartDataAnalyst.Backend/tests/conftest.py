@@ -18,7 +18,7 @@ def event_loop():
     loop.close()
 
 @pytest.fixture(autouse=True)
-def mock_llm():
+async def mock_llm():
     """
     Automatically mock llm_client.ask_llm for every test.
     Prevents readl Azure/OpenAI calls.

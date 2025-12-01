@@ -165,6 +165,7 @@ class Agent_v16(Agent_v13):
         # Step: Call LLM
         try:
             raw_llm = await ask_llm(prompt)
+            # print(f"raw_llm: {raw_llm}")
         except Exception as e:
             await self._set_status("idle")
             return f"Error calling LLM: {e}"
@@ -175,7 +176,7 @@ class Agent_v16(Agent_v13):
         # fallback behavior: if JSON not found, try to repair and parse with repair_json
         if not json_obj:
             try:
-                parsed, cleaned, explanation = repair_json(raw_llm)
+                parsed, cleaned, explanation = await repair_json(raw_llm)
                 json_obj = parsed
             except Exception:
                 json_obj = None
@@ -224,7 +225,7 @@ class Agent_v16(Agent_v13):
         if sdc_context:
             combined_context += f"\n[Structured Data Memory]\n{sdc_context}\n"
 
-        print(f"Combined context:\n{combined_context}")
+        # print(f"Combined context:\n{combined_context}")
 
         return combined_context, reuse_rows
     

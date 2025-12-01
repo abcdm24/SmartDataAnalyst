@@ -37,7 +37,7 @@ def test_cleanup_safe_if_none(agent_instance):
 def test_analyze_query_valid_code(monkeypatch):
     """Mock LLm and verify analyze_query executes correctly."""
     # Mock LLM to return valid python code
-    # monkeypatch.setattr("core.agent_v12.ask_llm", lambda prompt: "result = len(df)")
+    monkeypatch.setattr("core.agent_v12.ask_llm", lambda prompt: "result = len(df)")
 
     df = pd.DataFrame({"a":[1,2,3]})
     agent = Agent_v12()
@@ -48,7 +48,7 @@ def test_analyze_query_valid_code(monkeypatch):
 
 def test_analyze_query_invalid_code(monkeypatch):
     """Ensure analyze_query handles code errors gracefully."""
-    # monkeypatch.setattr("core.agent_v12.ask_llm", lambda prompt: "invalid code here")
+    monkeypatch.setattr("core.agent_v12.ask_llm", lambda prompt: "invalid code here")
 
     df = pd.DataFrame({"a":[1,2,3]})
     agent = Agent_v12()
@@ -67,7 +67,7 @@ def test_cleanup_called_in_finally(monkeypatch):
         cleanup_called["called"] = True
 
     # Force LLM to return bad code to trigger execution
-    # monkeypatch.setattr("core.agent_v12.ask_llm", lambda prompt: "raise Exception('oops')")
+    monkeypatch.setattr("core.agent_v12.ask_llm", lambda prompt: "raise Exception('oops')")
     monkeypatch.setattr(agent, "cleanup", mock_cleanup)
 
     _ = agent.analyze_query(df, "trigger error")

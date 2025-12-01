@@ -21,7 +21,7 @@ def test_repeated_analyze_query_does_not_leak_memory(monkeypatch, df_sample, ite
     """
                              
     # Mock ask_llm to return a simple valid code each time
-    # monkeypatch.setattr("core.agent_v12.ask_llm", lambda prompt: "result = df['value'].mean()")
+    monkeypatch.setattr("core.agent_v12.ask_llm", lambda prompt: "result = df['value'].mean()")
 
     agent = Agent_v12()
     process = psutil.Process()

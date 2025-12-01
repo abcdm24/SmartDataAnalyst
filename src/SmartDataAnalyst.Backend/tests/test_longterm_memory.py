@@ -8,7 +8,7 @@ from core.agent_v14 import Agent_v14
 FAISS_PATH = "data/memory.index"
 
 @pytest.mark.asyncio
-async def test_analyze_query_creates_and_uses_memory(tmp_path):
+async def test_analyze_query_creates_and_uses_memory(monkeypatch, tmp_path):
     """
     Test Agent_v14 end-to-end:
     1. Runs analyze_query on sample data.
@@ -25,16 +25,51 @@ async def test_analyze_query_creates_and_uses_memory(tmp_path):
     }
     df = pd.DataFrame(data)
 
+    # ---------- CLEAN MEMORY ----------
+    for f in [FAISS_PATH, FAISS_PATH + ".txt"]:
+        try:
+            if os.path.exists(f):
+                os.remove(f)
+        except:
+            pass
+
+    # ---------- MOCK ask_llm ----------
+    async def fake_llm(prompt: str):
+        # print(f"Prompt: {prompt.lower()}")
+        # Very deterministic fake results for both queries
+        
+        if "earlier finding on top sales" in prompt.lower():
+            return "result = 'Earlier, we found that Banana had the highest sales.'"
+            # return """
+            # {
+            #     "action": "direct_answer",
+            #     "answer": "Banana has the highest total sales."
+            # }
+            # """
+        elif "learned about sales performance earlier." in prompt.lower():
+            return "result = result = df.head(3)"
+        elif "highest total sales" in prompt.lower():
+            return "result = 'Banana has the highest total sales.'"
+            # return """
+            # {
+            #     "action": "direct_answer",
+            #     "answer": "Earlier, we found that Banana had the highest sales."
+            # }
+            # """
+      
+    # Patch LLM
+    monkeypatch.setattr("core.agent_v14.ask_llm", fake_llm)
+     
 
     # --- Step 2: Initialize agent ---
-    agent = Agent_v14()
+    agent = Agent_v14("movie_ratings.csv")
     #Ensures clean memory for testing
-    if os.path.exists(FAISS_PATH):
-        try:
-            os.remove(FAISS_PATH)   
-            os.remove(FAISS_PATH + ".txt")
-        except Exception:
-            pass
+    # if os.path.exists(FAISS_PATH):
+    #     try:
+    #         os.remove(FAISS_PATH)   
+    #         os.remove(FAISS_PATH + ".txt")
+    #     except Exception:
+    #         pass
     
     # --- Step 3: First query (should generate new FAISS memory) ---
     question_1 = "Which product has the highest total sales?"
@@ -56,13 +91,15 @@ async def test_analyze_query_creates_and_uses_memory(tmp_path):
 
     # --- Step 6: Verify it produces output and uses memory ---
     assert isinstance(result_2, str)
-    assert len(result_2) > 0
-    assert any(word in result_2.lower() for word in ["apple", "banana", "sales", "result"]), \
-    "Resoponse did not seem to recall past context."
+    #assert len(result_2) > 0
+    #assert any(word in result_2.lower() for word in ["apple", "banana", "sales", "result"]), \
+    #"Resoponse did not seem to recall past context."
+    # assert "earlier" in result_2.lower()
+    assert "banana" in result_2.lower()
 
     # --- Step 7: Confirm persistence services reloading ---
-    agent_reload = Agent_v14()
-    result_3 = await agent_reload.analyze_query(df, "What was out earlier finding on top sales?")
+    agent_reload = Agent_v14("movie_ratings.csv")
+    result_3 = await agent_reload.analyze_query(df, "What was our earlier finding on top sales?")
     print("\nReloaded agent result:\n", result_3)
     assert isinstance(result_3, str)
     assert len(result_3) > 0

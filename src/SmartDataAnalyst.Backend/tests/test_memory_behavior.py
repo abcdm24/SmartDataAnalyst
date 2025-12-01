@@ -28,7 +28,7 @@ async def test_followup_uses_memory(monkeypatch):
     async def fake_ask(prompt):
         captured["prompt"] = prompt
         return "result = 1"
-    # monkeypatch.setattr("core.agent_v13.ask_llm", fake_ask)
+    monkeypatch.setattr("core.agent_v13.ask_llm", fake_ask)
     agent = Agent_v13()
     # senf memory
     agent.add_to_memory("Previous Q", "Previous A")
