@@ -11,6 +11,10 @@ pytest-asyncio
 
 # Core memory components
 faiss-cpu==1.8.0.post1
+
+# CPU-only torch (prevents installing 2GB of CUDA libraries)
+torch==2.2.2+cpu
+--extra-index-url https://download.pytorch.org/whl/cpu
 sentence-transformers==3.0.1
 numpy==1.26.4
 scikit-learn==1.5.1
@@ -25,5 +29,3 @@ aiosqlite==0.20.0
 
 chardet
 
-# For vector database
-chromadb >= 0.5.0

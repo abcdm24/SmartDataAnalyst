@@ -24,7 +24,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.12-slim"
 
       # Install dependencies
       - name: Install dependencies
@@ -53,6 +53,16 @@ jobs:
       - name: Login to ACR
         run: |
           az acr login --name ${{ secrets.ACR_NAME }}
+
+      # ------------------
+      # Increase storage
+      # ------------------
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          df -h
 
       # -----------------------------
       # Build & push Docker Image
