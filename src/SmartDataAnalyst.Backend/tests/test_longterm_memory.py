@@ -47,7 +47,7 @@ async def test_analyze_query_creates_and_uses_memory(monkeypatch, tmp_path):
             # }
             # """
         elif "learned about sales performance earlier." in prompt.lower():
-            return "result = result = df.head(3)"
+            return "result = df.head(3)"
         elif "highest total sales" in prompt.lower():
             return "result = 'Banana has the highest total sales.'"
             # return """
@@ -81,8 +81,8 @@ async def test_analyze_query_creates_and_uses_memory(monkeypatch, tmp_path):
     assert "Error" not in result_1
 
     # --- Step 4: Check FAISS memory files ---
-    assert os.path.exists(FAISS_PATH), "FAISS index file not created."
-    assert os.path.exists(FAISS_PATH + ".txt"), "FAISS text memory not saved."
+    assert os.path.exists(os.path.abspath(FAISS_PATH)), "FAISS index file not created."
+    assert os.path.exists(os.path.abspath(FAISS_PATH + ".txt")), "FAISS text memory not saved."
 
     # --- Step 5: Second query (should use LTM retrieval) ---
     question_2 = "Remind me what we learned about sales performance earlier."
