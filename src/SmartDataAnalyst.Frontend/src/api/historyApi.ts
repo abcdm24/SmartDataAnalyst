@@ -2,7 +2,7 @@ import apiClient from "./apiClient";
 
 export const fetchHistory = async () => {
   const response = await apiClient.get("/history");
-  return response.data;
+  return response.data ?? [];
 };
 
 export async function fetchHistoryItem(id: string) {

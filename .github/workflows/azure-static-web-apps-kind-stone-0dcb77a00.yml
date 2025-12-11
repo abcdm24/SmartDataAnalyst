@@ -25,6 +25,9 @@ jobs:
         working-directory: src/SmartDataAnalyst.Frontend
         run: bun install
 
+      - name: Run tests
+        run: bun run test
+
       - name: Build App
         working-directory: src/SmartDataAnalyst.Frontend
         run: bun run build

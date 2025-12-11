@@ -199,7 +199,10 @@ const DataAnalysisPage: React.FC = () => {
                 <Form.Group controlId="queryInput">
                   <Form.Label>Ask AI about your data</Form.Label>
                   <Form.Control
+                    data-testid="query"
+                    id="query"
                     type="text"
+                    name="query"
                     placeholder="e.g., what is the average sales per region?"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
@@ -207,6 +210,7 @@ const DataAnalysisPage: React.FC = () => {
                 </Form.Group>
 
                 <Button
+                  name="AskAI"
                   variant="success"
                   className="mt-3"
                   onClick={handleAsk}
