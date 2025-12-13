@@ -51,7 +51,7 @@ async def ask_llm(prompt: str) -> str:
 
     client = await get_client()
 
-    response = await client.chat.completions.create(
+    response = client.chat.completions.create(
         # model=AZURE_OPENAI_DEPLOYMENT_NAME,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
