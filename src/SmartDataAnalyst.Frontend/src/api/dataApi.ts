@@ -1,8 +1,8 @@
 import apiClient from "./apiClient";
 
 export const uploadCsv = async (file: File) => {
-  await new Promise((resolve) => setTimeout(resolve, 3000));
-  return "Service unavailable";
+  // await new Promise((resolve) => setTimeout(resolve, 3000));
+  // return { preview: [] };
   const formData = new FormData();
   formData.append("file", file);
 
@@ -14,8 +14,8 @@ export const uploadCsv = async (file: File) => {
 };
 
 export const queryData = async (file: string | undefined, query: string) => {
-  await new Promise((resolve) => setTimeout(resolve, 3000));
-  return "Service unavailable";
+  // await new Promise((resolve) => setTimeout(resolve, 3000));
+  // return "Service unavailable";
 
   console.log(`query: ${query}`);
   const formData = new FormData();

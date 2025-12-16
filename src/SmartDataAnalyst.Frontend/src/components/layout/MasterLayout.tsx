@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 // import { Container, Row, Col } from "react-bootstrap";
-import { Outlet } from "react-router-dom";
+// import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 // import StatusIndicator from "./StatusIndicator";
@@ -21,7 +21,7 @@ const MasterLayout: React.FC = () => {
       {/* Right Content Area*/}
       <div className="flex-grow-1 d-flex flex-column">
         {/* Navbar */}
-        <div className="d-flex align-items-center bg-dark text-white p-2">
+        <div className="d-flex justify-content-between align-items-center bg-dark text-white p-2">
           {/* Hamburger Icon*/}
           <span
             style={{ cursor: "pointer", fontSize: "24px", marginRight: "15px" }}
@@ -30,10 +30,19 @@ const MasterLayout: React.FC = () => {
             ☰
           </span>
           <Navbar />
+          {/* <div className="me-3">{<StatusIndicator />}</div> */}
         </div>
         {/* Main content*/}
         <div className="overflow-auto p-3" style={{ flexGrow: 1 }}>
-          <Outlet />
+          {/* <Outlet /> */}
+          <div className="alert alert-warning" role="alert">
+            <h1 className="display-4 fw-bold text-uppercase">
+              Under Maintenance
+            </h1>
+            <p className="lead">
+              We’ll be back shortly. Thank you for your patience.
+            </p>
+          </div>
         </div>
       </div>
     </div>
