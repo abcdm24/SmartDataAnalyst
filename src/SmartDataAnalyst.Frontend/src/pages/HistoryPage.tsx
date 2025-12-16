@@ -47,6 +47,7 @@ const HistoryPage: React.FC = () => {
   //const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   const loadHistory = async () => {
+    return;
     setLoading(true);
     setError("");
 
@@ -110,7 +111,7 @@ const HistoryPage: React.FC = () => {
     <Container className="mt-4">
       <h2 className="mb-3 d-flex justify-content-between align-items-center">
         Analysis History
-        <Button variant="danger" size="sm" onClick={handleClearAll}>
+        <Button variant="danger" size="sm" onClick={handleClearAll} disabled>
           Clear All
         </Button>
       </h2>

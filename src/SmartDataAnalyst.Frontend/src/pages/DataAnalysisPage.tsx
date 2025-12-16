@@ -144,7 +144,7 @@ const DataAnalysisPage: React.FC = () => {
             <FileUpload
               label="Upload CSV File"
               onFileSelect={(file) => setFile(file)}
-              onUpload={handleUpload}
+              //onUpload={handleUpload}
               uploading={loading}
             />
 
@@ -213,7 +213,7 @@ const DataAnalysisPage: React.FC = () => {
                   name="AskAI"
                   variant="success"
                   className="mt-3"
-                  onClick={handleAsk}
+                  // onClick={handleAsk}
                   disabled={loading}
                 >
                   {loading
