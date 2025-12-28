@@ -54,8 +54,8 @@ const DataAnalysisPage: React.FC = () => {
     setError("");
     setChat([]);
     setCurrentFilename(file.name);
-    const name_without_ext =
-      file.name.substring(0, file.name.lastIndexOf(".")) || file.name;
+    //const name_without_ext =
+    //  file.name.substring(0, file.name.lastIndexOf(".")) || file.name;
     try {
       // const formData = new FormData();
       // formData.append("file", file);
