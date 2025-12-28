@@ -15,6 +15,7 @@ import ChatMessage from "../components/ChatMessage";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { uploadCsv, queryData } from "../api/dataApi";
 import { useAppContext } from "../context/AppContext";
+import DashboardPage from "./DashboardPage";
 
 interface Chat {
   sender: "user" | "ai";
@@ -31,6 +32,7 @@ const DataAnalysisPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { setCurrentFilename } = useAppContext();
+  const [datasetId, setDatasetId] = useState<string | undefined>();
 
   //const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -52,6 +54,8 @@ const DataAnalysisPage: React.FC = () => {
     setError("");
     setChat([]);
     setCurrentFilename(file.name);
+    const name_without_ext =
+      file.name.substring(0, file.name.lastIndexOf(".")) || file.name;
     try {
       // const formData = new FormData();
       // formData.append("file", file);
@@ -67,13 +71,14 @@ const DataAnalysisPage: React.FC = () => {
       // }
 
       const result = await uploadCsv(file);
-      console.log(`upload result: ${result.preview}`);
+      //console.log(`upload result: ${result.preview}`);
       setDataPreview(result.preview || []);
     } catch (err) {
       console.error(err);
       setError("Error uploading or parsing the file.");
     } finally {
       setLoading(false);
+      setDatasetId(file.name);
     }
   };
 
@@ -200,7 +205,6 @@ const DataAnalysisPage: React.FC = () => {
                   <Form.Label>Ask AI about your data</Form.Label>
                   <Form.Control
                     data-testid="query"
-                    id="query"
                     type="text"
                     name="query"
                     placeholder="e.g., what is the average sales per region?"
@@ -249,10 +253,11 @@ const DataAnalysisPage: React.FC = () => {
         </Tab>
 
         {/* Dashboard Tab (Placeholder) */}
-        <Tab eventKey="dashboard" title="Dashboard (Coming Soon)">
-          <div className="p-4 text-center text-muted">
+        <Tab eventKey="dashboard" title="Dashboard">
+          {/* <div className="p-4 text-center text-muted">
             <p>Interactive data dashboard coming soon.</p>
-          </div>
+          </div> */}
+          <DashboardPage datasetId={datasetId} />
         </Tab>
       </Tabs>
     </Container>

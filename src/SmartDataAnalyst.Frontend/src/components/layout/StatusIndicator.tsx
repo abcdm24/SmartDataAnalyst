@@ -54,15 +54,29 @@ const StatusIndicator: React.FC = () => {
   const renderStatusBadge = () => {
     switch (status) {
       case "processing":
-        return <span className="badge bg-primary pulse">⚙️ Processing...</span>;
+        return (
+          <span className="badge bg-primary pulse">
+            {currentFilename} ⚙️ Processing...
+          </span>
+        );
       case "active":
-        return <span className="badge bg-wraning pulse">🧠 AI Active</span>;
+        return (
+          <span className="badge bg-wraning pulse">
+            {currentFilename} 🧠 AI Active
+          </span>
+        );
       case "summarizing":
         return (
-          <span className="badge bg-wraning pulse">📝 Summarizing...</span>
+          <span className="badge bg-wraning pulse">
+            {currentFilename} 📝 Summarizing...
+          </span>
         );
       case "analyzing":
-        return <span className="badge bg-primary pulse">⚙️ Analyzing...</span>;
+        return (
+          <span className="badge bg-primary pulse">
+            {currentFilename} ⚙️ Analyzing...
+          </span>
+        );
       case "idle":
         return <span className="badge bg-success pulse">✅ Idle</span>;
       default:

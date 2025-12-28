@@ -11,7 +11,7 @@ on:
 jobs:
   test-build-and-deploy:
     runs-on: ubuntu-latest
-    name: Test -> Build & Deploy Backend to Azure Container Apps
+    name: Test -> Deploy Backend to Azure Function Apps
 
     steps:
       # Checkout code
@@ -28,8 +28,9 @@ jobs:
 
       # Install dependencies
       - name: Install dependencies
+        working-directory: src/SmartDataAnalyst.Backend
         run: |
-          pip install -r src/SmartDataAnalyst.Backend/requirements.txt
+          pip install -r requirements.txt
           pip install pytest pytest-asyncio
 
       # -----------------------------
@@ -47,44 +48,53 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # -----------------------------
-      # Login to ACR
-      # -----------------------------
-      - name: Login to ACR
-        run: |
-          az acr login --name ${{ secrets.ACR_NAME }}
+      # # -----------------------------
+      # # Login to ACR
+      # # -----------------------------
+      # - name: Login to ACR
+      #   run: |
+      #     az acr login --name ${{ secrets.ACR_NAME }}
 
-      # ------------------
-      # Increase storage
-      # ------------------
-      - name: Free up disk space
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          df -h
+      # # ------------------
+      # # Increase storage
+      # # ------------------
+      # - name: Free up disk space
+      #   run: |
+      #     sudo rm -rf /usr/share/dotnet
+      #     sudo rm -rf /usr/local/lib/android
+      #     sudo rm -rf /opt/ghc
+      #     df -h
+
+      # # -----------------------------
+      # # Build & push Docker Image
+      # # -----------------------------
+      # - name: Build and Push Backend Image to ACR
+      #   run: |
+      #     IMAGE_NAME=${{ secrets.ACR_LOGIN_SERVER }}/smartdataanalyst-backend:$(date +%s)
+      #     echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+
+      #     docker build \
+      #     -t $IMAGE_NAME \
+      #     -f src/SmartDataAnalyst.Backend/backend_azure.dockerfile \
+      #     src/SmartDataAnalyst.Backend
+
+      #     docker push $IMAGE_NAME
+
+      # # ------------------------------
+      # # Deploy to Azure Container Apps
+      # # -----------------------------
+      # - name: Deploy to Azure Container Apps
+      #   run: |
+      #     az containerapp update \
+      #     --name ${{ secrets.AZURE_WEBAPP_BACKEND }} \
+      #     --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+      #     --image $IMAGE_NAME
 
       # -----------------------------
-      # Build & push Docker Image
+      # Deploy to Azure Function App
       # -----------------------------
-      - name: Build and Push Backend Image to ACR
-        run: |
-          IMAGE_NAME=${{ secrets.ACR_LOGIN_SERVER }}/smartdataanalyst-backend:$(date +%s)
-          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
-
-          docker build \
-          -t $IMAGE_NAME \
-          -f src/SmartDataAnalyst.Backend/backend_azure.dockerfile \
-          src/SmartDataAnalyst.Backend
-
-          docker push $IMAGE_NAME
-
-      # ------------------------------
-      # Deploy to Azure Container Apps
-      # -----------------------------
-      - name: Deploy to Azure Container Apps
-        run: |
-          az containerapp update \
-          --name ${{ secrets.AZURE_WEBAPP_BACKEND }} \
-          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-          --image $IMAGE_NAME
+      - name: Deploy to Azure Functions
+        uses: azure/functions-action@v1
+        with:
+          app-name: ${{ secrets.AZURE_FUNCTIONAPP_NAME }}
+          package: src/SmartDataAnalyst.Backend
