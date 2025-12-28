@@ -1,5 +1,6 @@
 fastapi
 uvicorn
+azure-functions
 pandas
 matplotlib
 openai
