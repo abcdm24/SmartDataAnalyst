@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 // import { Container, Row, Col } from "react-bootstrap";
-import { Outlet } from "react-router-dom";
+//import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 // import StatusIndicator from "./StatusIndicator";
@@ -34,15 +34,15 @@ const MasterLayout: React.FC = () => {
         </div>
         {/* Main content*/}
         <div className="overflow-auto p-3" style={{ flexGrow: 1 }}>
-          <Outlet />
-          {/* <div className="alert alert-warning" role="alert">
+          {/* <Outlet /> */}
+          <div className="alert alert-warning" role="alert">
             <h1 className="display-4 fw-bold text-uppercase">
               Under Maintenance
             </h1>
             <p className="lead">
               We’ll be back shortly. Thank you for your patience.
             </p>
-          </div> */}
+          </div>
         </div>
       </div>
     </div>
